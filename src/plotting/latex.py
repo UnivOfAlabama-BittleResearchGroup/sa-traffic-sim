@@ -22,12 +22,11 @@ NAME_2_LATEX = {
     "lcAssertive": r"$\large{\text{lcAssertive}}$",
     "lcAssertiveDev": r"$\large{\text{lcAssertive}^{\sigma}}$",
     "FleetComposition": r"$\large{p_{\text{truck}}}$",
-    'TruckSpeedFactor': r'$\large{\text{SF}_{\text{truck}}}$',
-    'TruckAccel': r"$\large{a_{\text{truck}}}$",
-    'TruckTau': r'$\large{\tau_{\text{truck}}}$',
-    'TruckDecel': r"$\large{b_{\text{truck}}}$"
+    "TruckSpeedFactor": r"$\large{\text{SF}_{\text{truck}}}$",
+    "TruckAccel": r"$\large{a_{\text{truck}}}$",
+    "TruckTau": r"$\large{\tau_{\text{truck}}}$",
+    "TruckDecel": r"$\large{b_{\text{truck}}}$",
 }
-
 
 
 ORDERED_VARIABLES = {

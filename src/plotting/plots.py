@@ -1,5 +1,4 @@
 import plotly.graph_objects as go
-import plotly.express as px
 from plotly.subplots import make_subplots
 import pandas as pd
 import polars as pl
@@ -62,14 +61,6 @@ def plot_bars(
                 x=si_df[f"{col}_S1"],
                 y=si_df["latex_name"],
                 name=r"$\large{S_1}$",
-                # error_x=dict(
-                #     type="data",
-                #     array=si_df[f"{col}_S1_conf"].to_numpy(),
-                #     # make the color white
-                #     color="rgba(255, 255, 255, 1.0)",
-                #     # thickness=3,
-                #     # width=3,
-                # ),
                 orientation="h",
                 marker=dict(
                     color="rgba(0, 0, 0, 0.4)",
@@ -278,37 +269,6 @@ def plot_si_v_n(
                     # fill="tonexty"
                 )
 
-            # if (p_name == "Fuel Consumption" and var == "speedFactor") or (p_name != "Fuel Consumption" and var == "Accel"):
-            #     fig.add_trace(
-            #         go.Scatter(
-            #             x=[vals["index"][-1] - 2_000, vals["index"][-1] + 2_000],
-            #             y=[vals["mean"][-1] + vals["mean"][-1] * 0.1, ] * 2,
-            #             name=r"$\large{\text{Target CI}}$",
-            #             showlegend=(j + i)< 1,
-            #             line=dict(color="crimson", width=4, ), #dash="dash"),
-            #             mode="lines",
-            #             legendrank=100000,
-            #         ),
-            #         row=row_col[j][0],
-            #         col=row_col[j][1],
-            #         # fill="tonexty"
-            #     )
-
-            #     fig.add_trace(
-            #         go.Scatter(
-            #             x=[vals["index"][-1] - 2_000, vals["index"][-1] + 2_000],
-            #             y=[vals["mean"][-1] - vals["mean"][-1] * 0.1, ] * 2,
-            #             showlegend=False,
-            #             line=dict(color="crimson", width=4, ), #dash="dash"),
-            #             mode="lines",
-            #         ),
-            #         row=row_col[j][0],
-            #         col=row_col[j][1],
-            #         # fill="tonexty"
-            #     )
-
-            # if row_col[j][0] == 1:
-
             fig.update_layout(
                 **{
                     "xaxis{}".format(sum(idx)): dict(
@@ -352,10 +312,6 @@ def plot_si_v_n(
     )
 
     return fig
-
-    # fig.write_image("STs_All.png", scale=2, width=800, height=800)
-
-    # fig.show()
 
 
 def plot_ecdfs(
@@ -407,9 +363,7 @@ def plot_ecdfs(
                     col=i % 2 + 1,
                 )
 
-
         for sa_name, (df, color) in ecdf_mapping.items():
-
             # plot the SA samples as an ecdf
             x, counts = np.unique(df[name], return_counts=True)
             y = np.cumsum(counts)
@@ -456,7 +410,7 @@ def plot_ecdfs(
                         ),
                     ),
                 }
-            )  
+            )
 
     fig.update_layout(
         template="simple_white",
