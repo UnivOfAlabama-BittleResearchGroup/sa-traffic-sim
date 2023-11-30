@@ -1,0 +1,345 @@
+Metadata:
+  name: CorrPaper
+  author: mcschrader@crimson.ua.edu
+  output: /home/max/Development/airport-harper-simulation/tmp/CorrPaper/11.28.2023_15.27.09
+  run_id: '0'
+  cwd: /home/max/Development/airport-harper-simulation/tmp/CorrPaper/11.28.2023_15.27.09/0
+  simulation_root: /home/max/Development/airport-harper-simulation/simulation
+  random_seed: 42
+Blocks:
+  FuelTotalConfig:
+    emissions_xml: ${Metadata.cwd}/emissions.out.xml
+    sim_step: ${Blocks.SimulationConfig.step_length}
+    total_energy: 11849798246.967808
+    total_vehicles: 5042
+    delete_xml: true
+    output_time_filter_lower: ${Blocks.SimulationConfig.warmup_time}
+    output_time_filter_upper: null
+    polygon_file: ${Metadata.simulation_root}/additional/polygons/emission_filter.poly.add
+  XMLChangeOutputConfig:
+    changes:
+    - source: ${Metadata.simulation_root}/additional/detectors/e2.detectors.add.xml
+      target: ${Metadata.cwd}/e2.detectors.add.xml
+      new_output: NUL
+    - source: ${Metadata.simulation_root}/additional/detectors/radar.e2.add.xml
+      target: ${Metadata.cwd}/radar.e2.add.xml
+      new_output: ${Metadata.cwd}/radar.e2.out.add.xml
+    - source: ${Metadata.simulation_root}/additional/detectors/per_phase.e2.add.xml
+      target: ${Metadata.cwd}/per_phase.e2.add.xml
+      new_output: ${Metadata.cwd}/radar.e2.out.add.xml
+  XMLConvertConfig:
+    source: ${Metadata.cwd}/trip_info.out.xml
+    target: ${Metadata.cwd}/trip_info.parquet
+    elements:
+    - name: tripinfo
+      attributes:
+      - id
+      - depart
+      - departLane
+      - departPos
+      - departSpeed
+      - departDelay
+      - arrival
+      - arrivalLane
+      - arrivalPos
+      - arrivalSpeed
+      - duration
+      - routeLength
+      - waitingTime
+      - waitingCount
+      - stopTime
+      - timeLoss
+      - rerouteNo
+      - devices
+      - vtype
+    - name: emissions
+      attributes:
+      - CO_abs
+      - CO2_abs
+      - HC_abs
+      - PMx_abs
+      - NOx_abs
+      - fuel_abs
+    format: parquet
+    delete_source: true
+  SeedConfig:
+    num_samples: 100
+    seed: 83810
+    range:
+    - 0
+    - 100000
+  SobolSequenceConfig:
+    save_path: !!python/object/apply:pathlib.PosixPath
+    - dummy
+    params:
+      RandomSeed:
+        bounds:
+        - 0.0
+        - 100000.0
+        val: ${Blocks.SeedConfig.seed}
+    'N': 1
+    calc_second_order: false
+  SampledSimpleCFConfig:
+    save_path: ${Metadata.cwd}/vehDist.in.xml
+    vehicle_distribution_name: vehDist
+    cf_params:
+      carFollowModel:
+        distribution: uniform
+        params: {}
+        bounds: []
+        val: IDM
+        is_attr: true
+      emissionClass:
+        distribution: uniform
+        params: {}
+        bounds: []
+        val: PHEMlight/PC_G_EU4
+        is_attr: true
+      actionStepLength:
+        distribution: uniform
+        params: {}
+        bounds: []
+        val: 0.2
+        is_attr: true
+      tau:
+        distribution: normal
+        params:
+          mu: 1.266
+          sd: 0.507
+        bounds:
+        - 0.2
+        - 2.5
+        val: null
+        is_attr: false
+      accel:
+        distribution: lognormal
+        params:
+          mu: 0.13208
+          sd: 1.052674
+        bounds:
+        - 0.5
+        - 6
+        val: null
+        is_attr: false
+      decel:
+        distribution: lognormal
+        params:
+          mu: 0.53722117
+          sd: 1.016988
+        bounds:
+        - 0.2
+        - 8
+        val: null
+        is_attr: false
+      minGap:
+        distribution: lognormal
+        params:
+          mu: 0.65170686
+          sd: 1.18412193
+        bounds:
+        - 0.5
+        - 5
+        val: null
+        is_attr: false
+      length:
+        distribution: uniform
+        params:
+          a: 4.0
+          b: 6.0
+        bounds: []
+        val: null
+        is_attr: false
+      vClass:
+        distribution: uniform
+        params: {}
+        bounds: []
+        val: passenger
+        is_attr: true
+      lcCooperative:
+        distribution: normal
+        params:
+          mu: 1.0
+          sd: 0.2
+        bounds: []
+        val: null
+        is_attr: false
+      jmTimegapMinor:
+        distribution: uniform
+        params:
+          a: 3.0
+          b: 6.0
+        bounds: []
+        val: null
+        is_attr: false
+      lcKeepRight:
+        distribution: uniform
+        params:
+          a: ${..bounds[0]}
+          b: ${..bounds[1]}
+        bounds:
+        - 0.3
+        - 0.7
+        val: null
+        is_attr: false
+      lcOvertakeRight:
+        distribution: uniform
+        params:
+          a: ${..bounds[0]}
+          b: ${..bounds[1]}
+        bounds:
+        - 0.0
+        - 0.1
+        val: null
+        is_attr: false
+    seed: ${Blocks.SobolSequenceConfig.params.RandomSeed.val}
+    decimal_places: 5
+    num_samples: 1000
+  RandomTripsConfig:
+    net_file: ${Blocks.SimulationConfig.net_file}
+    output_file: ${Metadata.cwd}/random.trips.xml
+    seed: ${Blocks.SobolSequenceConfig.params.RandomSeed.val}
+    additional_args:
+    - -L
+    - --fringe-factor
+    - max
+    - --speed-exponent
+    - '0'
+  RouteSamplerConfig:
+    turn_file: ${Metadata.simulation_root}/../data/TSB_data/2023-07-01_2023-08-31/turns.in.xml
+    output_file: ${Metadata.cwd}/routesampler.rou.xml
+    random_route_file: ${Blocks.RandomTripsConfig.output_file}
+    additional_args:
+    - --optimize
+    - full
+    - --minimize-vehicles
+    - ${uniform:0.9,0.99}
+    - -a
+    - departLane="best" departSpeed="avg" type="vehDist"
+    - --write-flows
+    - number
+    - --weighted
+    seed: ${Blocks.SobolSequenceConfig.params.RandomSeed.val}
+  SimulationConfig:
+    start_time: 0
+    end_time: 9600
+    net_file: ${Metadata.simulation_root}/network/net.net.xml
+    gui: false
+    route_files:
+    - ${Blocks.RouteSamplerConfig.output_file}
+    additional_files:
+    - ${Metadata.cwd}/vehDist.in.xml
+    - ${Blocks.XMLChangeOutputConfig.changes[0].target}
+    - ${Blocks.XMLChangeOutputConfig.changes[1].target}
+    - ${Blocks.XMLChangeOutputConfig.changes[2].target}
+    - ${Metadata.simulation_root}/additional/signals/63082002.NEMA.Coordinated.xml
+    - ${Metadata.simulation_root}/additional/signals/63082003.NEMA.Coordinated.xml
+    - ${Metadata.simulation_root}/additional/signals/63082004.NEMA.Coordinated.xml
+    step_length: 0.1
+    additional_sim_params:
+    - --seed
+    - ${int:${Blocks.SobolSequenceConfig.params.RandomSeed.val}}
+    - --start
+    - --tripinfo-output
+    - ${Blocks.XMLConvertConfig.source}
+    - --tripinfo-output.write-unfinished
+    - --device.emissions.begin
+    - ${Blocks.SimulationConfig.warmup_time}
+    - --device.emissions.probability
+    - '1'
+    - --emission-output
+    - ${Metadata.cwd}/emissions.out.xml
+    simulation_output: ${Metadata.cwd}/sumo_output.txt
+    warmup_time: 1800
+    make_cmd: ${import:simulation.make_cmd}
+    start_time_rw: null
+    runner_function: null
+    runner_function_config: {}
+    socket_listeners: null
+Pipeline:
+  pipeline:
+  - block: RunSimulation
+    producers:
+    - function: ${import:producers.generate_random_seed}
+      config: ${Blocks.SeedConfig}
+    consumers:
+    - function: ${import:xml.update_output_file}
+      config: ${Blocks.XMLChangeOutputConfig}
+    - function: vehicle_distributions.create_simple_sampled_distribution
+      config: ${Blocks.SampledSimpleCFConfig}
+    - function: routesampler.call_random_trips
+      config: ${Blocks.RandomTripsConfig}
+    - function: routesampler.call_route_sampler
+      config: ${Blocks.RouteSamplerConfig}
+    - function: simulation.run_sumo
+      config: ${Blocks.SimulationConfig}
+    - function: ${import:xml.convert_xml_to_parquet}
+      config: ${Blocks.XMLConvertConfig}
+    - function: ${import:xml.convert_xml_to_parquet}
+      config:
+        source: ${Blocks.XMLChangeOutputConfig.changes[1].new_output}
+        target: ${Metadata.cwd}/detectors.parquet
+        delete_source: true
+        elements:
+        - name: interval
+          attributes:
+          - begin
+          - end
+          - id
+          - sampledSeconds
+          - nVehEntered
+          - nVehLeft
+          - nVehSeen
+          - meanSpeed
+          - meanTimeLoss
+    - function: external.src.calibration.metrics.usdot_calibrate
+      config:
+        sim_file: ${Metadata.cwd}/detectors.parquet
+        calibrate_file: ${Metadata.simulation_root}/../data/TSB_data/2023-07-01_2023-08-31/calibrate.parquet
+        detector_mapping: ${Metadata.simulation_root}/../data/detector_mappings/radar_detector_mapping.yaml
+        output_file: ${Metadata.cwd}/usdot_res.parquet
+        start_time: '2023-07-24 05:30:00'
+        warmup: ${Blocks.SimulationConfig.warmup_time}
+        calibrate_detectors:
+        - tl: '63082002'
+          detectors:
+          - EB
+        - tl: '63082003'
+          detectors:
+          - WB_advance
+          - EB
+        - tl: '63082004'
+          detectors:
+          - WB
+        calibration_passed: true
+    - function: external.src.sa_helpers.metrics.get_sa_results
+      config:
+        trip_info_file: ${Blocks.XMLConvertConfig.target}
+        detector_file: ${Metadata.cwd}/detectors.parquet
+        warmup_time: ${Blocks.SimulationConfig.warmup_time}
+        total_fuel_l: 422.4127369269245
+        average_fc: 8.399799503923765
+        average_speed: 12.396909069078196
+        average_delay: 48.52593183177197
+        average_travel_time: 100.74070161451067
+        delay_ratio: 0.3137426805052667
+        total_vehicles: 5017
+    - function: emissions.fast_total_energy
+      config: ${Blocks.FuelTotalConfig}
+    - function: ${import:io.save_config}
+      config:
+        save_path: ${Metadata.cwd}/config.yaml
+    - function: ${import:io.rm_file}
+      config:
+        rm_files:
+        - ${Blocks.XMLChangeOutputConfig.changes[0].target}
+        - ${Blocks.XMLChangeOutputConfig.changes[1].target}
+        - ${Metadata.cwd}/detectors.parquet
+        - ${Metadata.cwd}/random.trips.xml
+        - ${Metadata.cwd}/vehDist.in.xml
+        - ${Metadata.cwd}/routes.add.xml
+        - ${Metadata.cwd}/routesampler.rou.xml
+        - ${Metadata.cwd}/per_phase.e2.add.xml
+    parallel: true
+    number_of_workers: 64
+  executor: ray
+  parallel_proc: auto

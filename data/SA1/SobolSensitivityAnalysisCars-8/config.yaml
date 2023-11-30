@@ -1,0 +1,467 @@
+Metadata:
+  name: SobolSensitivityAnalysisCars-8
+  author: mcschrader@crimson.ua.edu
+  output: /home/max/Development/airport-harper-simulation/tmp/SobolSensitivityAnalysisCars-8/11.24.2023_08.33.52
+  run_id: '0'
+  cwd: /home/max/Development/airport-harper-simulation/tmp/SobolSensitivityAnalysisCars-8/11.24.2023_08.33.52/0
+  simulation_root: /home/max/Development/airport-harper-simulation/simulation
+  random_seed: 42
+Blocks:
+  FuelTotalConfig:
+    emissions_xml: ${Metadata.cwd}/emissions.out.xml
+    sim_step: ${Blocks.SimulationConfig.step_length}
+    total_energy: 12047761384.849405
+    total_vehicles: 5044
+    delete_xml: true
+    output_time_filter_lower: ${Blocks.SimulationConfig.warmup_time}
+    output_time_filter_upper: null
+    polygon_file: ${Metadata.simulation_root}/additional/polygons/emission_filter.poly.add
+  XMLChangeOutputConfig:
+    changes:
+    - source: ${Metadata.simulation_root}/additional/detectors/e2.detectors.add.xml
+      target: ${Metadata.cwd}/e2.detectors.add.xml
+      new_output: NUL
+    - source: ${Metadata.simulation_root}/additional/detectors/radar.e2.add.xml
+      target: ${Metadata.cwd}/radar.e2.add.xml
+      new_output: ${Metadata.cwd}/radar.e2.out.add.xml
+    - source: ${Metadata.simulation_root}/additional/detectors/per_phase.e2.add.xml
+      target: ${Metadata.cwd}/per_phase.e2.add.xml
+      new_output: ${Metadata.cwd}/radar.e2.out.add.xml
+  XMLConvertConfig:
+    source: ${Metadata.cwd}/trip_info.out.xml
+    target: ${Metadata.cwd}/trip_info.parquet
+    elements:
+    - name: tripinfo
+      attributes:
+      - id
+      - depart
+      - departLane
+      - departPos
+      - departSpeed
+      - departDelay
+      - arrival
+      - arrivalLane
+      - arrivalPos
+      - arrivalSpeed
+      - duration
+      - routeLength
+      - waitingTime
+      - waitingCount
+      - stopTime
+      - timeLoss
+      - rerouteNo
+      - devices
+      - vtype
+    - name: emissions
+      attributes:
+      - CO_abs
+      - CO2_abs
+      - HC_abs
+      - PMx_abs
+      - NOx_abs
+      - fuel_abs
+    format: parquet
+    delete_source: true
+  SobolSequenceConfig:
+    save_path: ${Metadata.output}/sobol_sequence.parquet
+    params:
+      RandomSeed:
+        bounds:
+        - 0.0
+        - 100000.0
+        val: 43102.9474362731
+      Tau:
+        bounds:
+        - 0.71
+        - 2.0
+        val: 1.7605346842855214
+      TauDev:
+        bounds:
+        - 0.334
+        - 0.507
+        val: 0.47350940863694996
+      TauDist:
+        bounds:
+        - 0.0
+        - 3.0
+        val: 0.16037005372345448
+      Accel:
+        bounds:
+        - 0.8
+        - 2.6
+        val: 1.33629061691463
+      AccelDev:
+        bounds:
+        - 0.1012
+        - 0.5
+        val: 0.4361433454129845
+      AccelDist:
+        bounds:
+        - 0.0
+        - 3.0
+        val: 2.0933275474235415
+      Decel:
+        bounds:
+        - 0.8
+        - 4.5
+        val: 3.034661035053432
+      DecelDev:
+        bounds:
+        - 0.725
+        - 1.849
+        val: 1.6312013509646057
+      DecelDist:
+        bounds:
+        - 0.0
+        - 3.0
+        val: 0.3439754471182823
+      minGap:
+        bounds:
+        - 1.5
+        - 3.5
+        val: 2.5565855987370014
+      minGapDev:
+        bounds:
+        - 0.96
+        - 1.2
+        val: 1.121535095795989
+      minGapDist:
+        bounds:
+        - 0.0
+        - 3.0
+        val: 1.1431804904714227
+      speedFactor:
+        bounds:
+        - 0.9
+        - 1.15
+        val: 1.048508800426498
+      speedDev:
+        bounds:
+        - 0.1
+        - 0.28
+        val: 0.17614739073440433
+      speedFactorDist:
+        bounds:
+        - 0.0
+        - 2.0
+        val: 0.725901460275054
+      impatience:
+        bounds:
+        - 0.05
+        - 0.55
+        val: 0.08821558225899935
+      impatienceDev:
+        bounds:
+        - 0.05
+        - 0.25
+        val: 0.10348064284771681
+      lcStrategic:
+        bounds:
+        - 0.8
+        - 1.2
+        val: 1.107027393952012
+      lcStrategicDev:
+        bounds:
+        - 0.1
+        - 0.25
+        val: 0.24704777314327658
+      lcAssertive:
+        bounds:
+        - 0.9
+        - 1.9
+        val: 1.165676430426538
+      lcAssertiveDev:
+        bounds:
+        - 0.1
+        - 0.25
+        val: 0.13675266965292393
+    'N': 8
+    calc_second_order: false
+  SampledSimpleCFConfig:
+    save_path: ${Metadata.cwd}/vehDist.in.xml
+    vehicle_distribution_name: vehDist
+    cf_params:
+      carFollowModel:
+        distribution: uniform
+        params: {}
+        bounds: []
+        val: IDM
+        is_attr: true
+      emissionClass:
+        distribution: uniform
+        params: {}
+        bounds: []
+        val: PHEMlight/PC_G_EU4
+        is_attr: true
+      tau:
+        distribution: ${call:${import:external.src.sa_helpers.distributions.get},${Blocks.SobolSequenceConfig.params.TauDist.val}}
+        params: ${call:${import:external.src.sa_helpers.distributions.transform},${.distribution},${Blocks.SobolSequenceConfig.params.Tau.val},${Blocks.SobolSequenceConfig.params.TauDev.val}}
+        bounds:
+        - 0.2
+        - 2.5
+        val: null
+        is_attr: false
+      accel:
+        distribution: ${call:${import:external.src.sa_helpers.distributions.get},${Blocks.SobolSequenceConfig.params.AccelDist.val}}
+        params: ${call:${import:external.src.sa_helpers.distributions.transform},${.distribution},${Blocks.SobolSequenceConfig.params.Accel.val},${Blocks.SobolSequenceConfig.params.AccelDev.val}}
+        bounds:
+        - 0.5
+        - 6
+        val: null
+        is_attr: false
+      decel:
+        distribution: ${call:${import:external.src.sa_helpers.distributions.get},${Blocks.SobolSequenceConfig.params.DecelDist.val}}
+        params: ${call:${import:external.src.sa_helpers.distributions.transform},${.distribution},${Blocks.SobolSequenceConfig.params.Decel.val},${Blocks.SobolSequenceConfig.params.DecelDev.val}}
+        bounds:
+        - 0.2
+        - 6
+        val: null
+        is_attr: false
+      minGap:
+        distribution: ${call:${import:external.src.sa_helpers.distributions.get},${Blocks.SobolSequenceConfig.params.minGapDist.val}}
+        params: ${call:${import:external.src.sa_helpers.distributions.transform},${.distribution},${Blocks.SobolSequenceConfig.params.minGap.val},${Blocks.SobolSequenceConfig.params.minGapDev.val}}
+        bounds:
+        - 0.1
+        - 5
+        val: null
+        is_attr: false
+      speedFactor:
+        distribution: ${call:${import:external.src.sa_helpers.distributions.get},${Blocks.SobolSequenceConfig.params.speedFactorDist.val}}
+        params: ${call:${import:external.src.sa_helpers.distributions.transform},${.distribution},${Blocks.SobolSequenceConfig.params.speedFactor.val},${Blocks.SobolSequenceConfig.params.speedDev.val}}
+        bounds:
+        - 0.7
+        - 1.3
+        val: null
+        is_attr: false
+      impatience:
+        distribution: uniform
+        params: ${call:${import:external.src.sa_helpers.distributions.transform},${.distribution},${Blocks.SobolSequenceConfig.params.impatience.val},${Blocks.SobolSequenceConfig.params.impatienceDev.val}}
+        bounds:
+        - 0
+        - 0.6
+        val: null
+        is_attr: false
+      lcStrategic:
+        distribution: uniform
+        params: ${call:${import:external.src.sa_helpers.distributions.transform},${.distribution},${Blocks.SobolSequenceConfig.params.lcStrategic.val},${Blocks.SobolSequenceConfig.params.lcStrategicDev.val}}
+        bounds:
+        - 0.7
+        - 1.3
+        val: null
+        is_attr: false
+      lcAssertive:
+        distribution: uniform
+        params: ${call:${import:external.src.sa_helpers.distributions.transform},${.distribution},${Blocks.SobolSequenceConfig.params.lcAssertive.val},${Blocks.SobolSequenceConfig.params.lcAssertiveDev.val}}
+        bounds:
+        - 0.8
+        - 2
+        val: null
+        is_attr: false
+      length:
+        distribution: uniform
+        params:
+          a: 4.0
+          b: 6.0
+        bounds: []
+        val: null
+        is_attr: false
+      vClass:
+        distribution: uniform
+        params: {}
+        bounds: []
+        val: passenger
+        is_attr: true
+      lcCooperative:
+        distribution: normal
+        params:
+          mu: 1.0
+          sd: 0.2
+        bounds: []
+        val: null
+        is_attr: false
+      actionStepLength:
+        distribution: uniform
+        params: {}
+        bounds: []
+        val: 0.2
+        is_attr: true
+      jmTimegapMinor:
+        distribution: uniform
+        params:
+          a: 3.0
+          b: 6.0
+        bounds: []
+        val: null
+        is_attr: false
+      lcKeepRight:
+        distribution: uniform
+        params:
+          a: ${..bounds[0]}
+          b: ${..bounds[1]}
+        bounds:
+        - 0.3
+        - 0.7
+        val: null
+        is_attr: false
+      lcOvertakeRight:
+        distribution: uniform
+        params:
+          a: ${..bounds[0]}
+          b: ${..bounds[1]}
+        bounds:
+        - 0.0
+        - 0.1
+        val: null
+        is_attr: false
+    seed: ${Blocks.SobolSequenceConfig.params.RandomSeed.val}
+    decimal_places: 5
+    num_samples: 1000
+  RandomTripsConfig:
+    net_file: ${Blocks.SimulationConfig.net_file}
+    output_file: ${Metadata.cwd}/random.trips.xml
+    seed: ${Blocks.SobolSequenceConfig.params.RandomSeed.val}
+    additional_args:
+    - -L
+    - --fringe-factor
+    - max
+    - --speed-exponent
+    - '0'
+  RouteSamplerConfig:
+    turn_file: ${Metadata.simulation_root}/../data/TSB_data/2023-07-01_2023-08-31/turns.in.xml
+    output_file: ${Metadata.cwd}/routesampler.rou.xml
+    random_route_file: ${Blocks.RandomTripsConfig.output_file}
+    additional_args:
+    - --optimize
+    - full
+    - --minimize-vehicles
+    - ${uniform:0.9,0.99}
+    - -a
+    - departLane="best" departSpeed="avg" type="vehDist"
+    - --write-flows
+    - number
+    - --weighted
+    seed: ${Blocks.SobolSequenceConfig.params.RandomSeed.val}
+  SimulationConfig:
+    start_time: 0
+    end_time: 9600
+    net_file: ${Metadata.simulation_root}/network/net.net.xml
+    gui: false
+    route_files:
+    - ${Blocks.RouteSamplerConfig.output_file}
+    additional_files:
+    - ${Metadata.cwd}/vehDist.in.xml
+    - ${Blocks.XMLChangeOutputConfig.changes[0].target}
+    - ${Blocks.XMLChangeOutputConfig.changes[1].target}
+    - ${Blocks.XMLChangeOutputConfig.changes[2].target}
+    - ${Metadata.simulation_root}/additional/signals/63082002.NEMA.Coordinated.xml
+    - ${Metadata.simulation_root}/additional/signals/63082003.NEMA.Coordinated.xml
+    - ${Metadata.simulation_root}/additional/signals/63082004.NEMA.Coordinated.xml
+    step_length: 0.1
+    additional_sim_params:
+    - --seed
+    - ${int:${Blocks.SobolSequenceConfig.params.RandomSeed.val}}
+    - --start
+    - --tripinfo-output
+    - ${Blocks.XMLConvertConfig.source}
+    - --tripinfo-output.write-unfinished
+    - --device.emissions.begin
+    - ${Blocks.SimulationConfig.warmup_time}
+    - --device.emissions.probability
+    - '1'
+    - --emission-output
+    - ${Metadata.cwd}/emissions.out.xml
+    simulation_output: ${Metadata.cwd}/sumo_output.txt
+    warmup_time: 1800
+    make_cmd: ${import:simulation.make_cmd}
+    start_time_rw: null
+    runner_function: null
+    runner_function_config: {}
+    socket_listeners: null
+Pipeline:
+  pipeline:
+  - block: RunSimulation
+    producers:
+    - function: producers.generate_sobol_sequence
+      config: ${Blocks.SobolSequenceConfig}
+    consumers:
+    - function: ${import:xml.update_output_file}
+      config: ${Blocks.XMLChangeOutputConfig}
+    - function: vehicle_distributions.create_simple_sampled_distribution
+      config: ${Blocks.SampledSimpleCFConfig}
+    - function: routesampler.call_random_trips
+      config: ${Blocks.RandomTripsConfig}
+    - function: routesampler.call_route_sampler
+      config: ${Blocks.RouteSamplerConfig}
+    - function: simulation.run_sumo
+      config: ${Blocks.SimulationConfig}
+    - function: ${import:xml.convert_xml_to_parquet}
+      config: ${Blocks.XMLConvertConfig}
+    - function: ${import:xml.convert_xml_to_parquet}
+      config:
+        source: ${Blocks.XMLChangeOutputConfig.changes[1].new_output}
+        target: ${Metadata.cwd}/detectors.parquet
+        delete_source: true
+        elements:
+        - name: interval
+          attributes:
+          - begin
+          - end
+          - id
+          - sampledSeconds
+          - nVehEntered
+          - nVehLeft
+          - nVehSeen
+          - meanSpeed
+          - meanTimeLoss
+    - function: external.src.calibration.metrics.usdot_calibrate
+      config:
+        sim_file: ${Metadata.cwd}/detectors.parquet
+        calibrate_file: ${Metadata.simulation_root}/../data/TSB_data/2023-07-01_2023-08-31/calibrate.parquet
+        detector_mapping: ${Metadata.simulation_root}/../data/detector_mappings/radar_detector_mapping.yaml
+        output_file: ${Metadata.cwd}/usdot_res.parquet
+        start_time: '2023-07-24 05:30:00'
+        warmup: ${Blocks.SimulationConfig.warmup_time}
+        calibrate_detectors:
+        - tl: '63082002'
+          detectors:
+          - EB
+        - tl: '63082003'
+          detectors:
+          - WB_advance
+          - EB
+        - tl: '63082004'
+          detectors:
+          - WB
+        calibration_passed: true
+    - function: external.src.sa_helpers.metrics.get_sa_results
+      config:
+        trip_info_file: ${Blocks.XMLConvertConfig.target}
+        detector_file: ${Metadata.cwd}/detectors.parquet
+        warmup_time: ${Blocks.SimulationConfig.warmup_time}
+        total_fuel_l: 434.4386998417763
+        average_fc: 8.631884062970691
+        average_speed: 12.016258209200032
+        average_delay: 47.11958142316124
+        average_travel_time: 99.79109029300379
+        delay_ratio: 0.31241033528446255
+        total_vehicles: 5017
+    - function: emissions.fast_total_energy
+      config: ${Blocks.FuelTotalConfig}
+    - function: ${import:io.save_config}
+      config:
+        save_path: ${Metadata.cwd}/config.yaml
+    - function: ${import:io.rm_file}
+      config:
+        rm_files:
+        - ${Blocks.XMLChangeOutputConfig.changes[0].target}
+        - ${Blocks.XMLChangeOutputConfig.changes[1].target}
+        - ${Metadata.cwd}/detectors.parquet
+        - ${Metadata.cwd}/random.trips.xml
+        - ${Metadata.cwd}/vehDist.in.xml
+        - ${Metadata.cwd}/routes.add.xml
+        - ${Metadata.cwd}/routesampler.rou.xml
+        - ${Metadata.cwd}/per_phase.e2.add.xml
+    parallel: true
+    number_of_workers: 64
+  executor: ray
+  parallel_proc: auto
