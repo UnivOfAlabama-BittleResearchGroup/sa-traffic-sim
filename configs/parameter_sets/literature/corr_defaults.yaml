@@ -1,0 +1,92 @@
+# length;uniform(4,6)
+# vClass;passenger
+# carFollowModel;IDM
+# emissionClass;PHEMlight/PC_G_EU4
+# actionStepLength; 0.2
+# accel; lognormal(0.13208, 1.052674); [0.5, 6]
+# decel; lognormal(0.53722117, 1.016988); [0.2, 8]
+# minGap; lognormal(0.65170686, 1.18412193); [0.5, 5]
+# # tau; normal(1.266, 0.507); [0.2, 2.5]
+# # lcCooperative; normal(1, 0.2)
+# # jmTimegapMinor;uniform(3, 6)
+# # lcKeepRight;uniform(0.3, 0.7)
+# # lcOvertakeRight;uniform(0.0, 0.1)
+
+Blocks:
+
+  SampledSimpleCFConfig:
+      vehicle_distribution_name: "vehDist"
+      save_path: ${Metadata.cwd}/vehDist.in.xml
+      seed: ${Blocks.SobolSequenceConfig.params.RandomSeed.val}
+      decimal_places: 5
+      num_samples: 1000
+      cf_params:
+      
+        carFollowModel:
+          is_attr: True
+          val: "IDM"
+        emissionClass:
+          is_attr: True
+          val: PHEMlight/PC_G_EU4
+        actionStepLength:
+          is_attr: True
+          val: 0.2
+          
+        tau:
+          distribution: normal
+          params: {'mu': 1.266, 'sd': 0.507}
+          bounds:
+            - 0.2
+            - 2.5
+        accel:
+          distribution: lognormal
+          params: {'mu': 0.13208, 'sd': 1.052674}
+          bounds:
+            - 0.5
+            - 6
+        decel:
+          distribution: lognormal
+          params: {'mu': 0.53722117, 'sd': 1.016988}
+          bounds:
+            - 0.2
+            - 8
+        minGap:
+          distribution: lognormal
+          params: {'mu': 0.65170686, 'sd': 1.18412193}
+          bounds:
+            - 0.5
+            - 5
+
+
+        length:
+          distribution: "uniform"
+          params: { "a": 4, "b": 6 }
+
+        vClass:
+          is_attr: True
+          val: "passenger"
+
+        lcCooperative:
+          distribution: "normal"
+          params: { "mu": 1, "sd": 0.2 }
+
+
+        jmTimegapMinor:
+          distribution: "uniform"
+          params: { "a": 3, "b": 6 }
+
+        lcKeepRight:
+          distribution: "uniform"
+          params:
+            a: ${..bounds[0]}
+            b: ${..bounds[1]}
+          # bounds: [4.7, 4.8]
+          bounds: [0.3, 0.7]
+
+        lcOvertakeRight:
+          distribution: "uniform"
+          # bounds: [0.3, 0.4]
+          bounds: [0.0, 0.1]
+          params:
+            a: ${..bounds[0]}
+            b: ${..bounds[1]}

@@ -1,0 +1,122 @@
+Blocks:
+
+  RouteSamplerConfig:
+    turn_file: ${Metadata.simulation_root}/../data/TSB_data/2023-07-01_2023-08-31/turns.in.xml
+    random_route_file: ${Blocks.RandomTripsConfig.output_file}
+    output_file: ${Metadata.cwd}/routesampler.rou.xml
+    seed: ${Blocks.SobolSequenceConfig.params.RandomSeed.val}
+    additional_args:
+      - "--optimize"
+      - "full"
+      - "--minimize-vehicles"
+      - ${uniform:0.9,0.99}
+      # - "0.95"
+      - "-a"
+      - 'departLane="best" departSpeed="avg" type="vehDist"'
+      - "--write-flows"
+      - "number"
+      - "--weighted"
+
+  RandomTripsConfig:
+    net_file: ${Blocks.SimulationConfig.net_file}
+    seed: ${Blocks.SobolSequenceConfig.params.RandomSeed.val}
+    output_file: ${Metadata.cwd}/random.trips.xml
+    additional_args:
+      - "-L"
+      - "--fringe-factor"
+      - "max"
+      - "--speed-exponent"
+      - "0"
+
+  XMLChangeOutputConfig:
+    changes:
+      - source: ${Metadata.simulation_root}/additional/detectors/e2.detectors.add.xml
+        target: ${Metadata.cwd}/e2.detectors.add.xml
+        new_output: "NUL"
+      - source: ${Metadata.simulation_root}/additional/detectors/radar.e2.add.xml
+        target: ${Metadata.cwd}/radar.e2.add.xml
+        new_output: ${Metadata.cwd}/radar.e2.out.add.xml
+      - source: ${Metadata.simulation_root}/additional/detectors/per_phase.e2.add.xml
+        target: ${Metadata.cwd}/per_phase.e2.add.xml
+        new_output: ${Metadata.cwd}/radar.e2.out.add.xml
+
+  SimulationConfig:
+    start_time: 0 # Starts at 5:30AM
+    end_time: 9600 # Ends at 8:10AM
+    # end_time: 3600 # Ends at 6:30AM
+    net_file: ${Metadata.simulation_root}/network/net.net.xml
+    gui: False
+    route_files:
+      - ${Blocks.RouteSamplerConfig.output_file}
+
+    additional_files:
+      - ${Metadata.cwd}/vehDist.in.xml  # this is probably bad practice, but :shrug:
+      - ${Blocks.XMLChangeOutputConfig.changes[0].target}
+      - ${Blocks.XMLChangeOutputConfig.changes[1].target}
+      - ${Blocks.XMLChangeOutputConfig.changes[2].target}
+      - ${Metadata.simulation_root}/additional/signals/63082002.NEMA.Coordinated.xml
+      - ${Metadata.simulation_root}/additional/signals/63082003.NEMA.Coordinated.xml
+      - ${Metadata.simulation_root}/additional/signals/63082004.NEMA.Coordinated.xml
+
+    step_length: 0.1
+    additional_sim_params:
+      - --seed
+      - ${int:${Blocks.SobolSequenceConfig.params.RandomSeed.val}}
+      - --start
+      - --tripinfo-output
+      - ${Blocks.XMLConvertConfig.source}
+      - --tripinfo-output.write-unfinished
+      - --device.emissions.begin
+      - ${Blocks.SimulationConfig.warmup_time}
+      - --device.emissions.probability
+      - 1
+      - --emission-output
+      - ${Metadata.cwd}/emissions.out.xml
+
+
+    simulation_output: ${Metadata.cwd}/sumo_output.txt
+
+  XMLConvertConfig:
+    source: ${Metadata.cwd}/trip_info.out.xml
+    target: ${Metadata.cwd}/trip_info.parquet
+    delete_source: true
+    elements:
+      - name: tripinfo
+        attributes:
+          - id
+          - depart
+          - departLane
+          - departPos
+          - departSpeed
+          - departDelay
+          - arrival
+          - arrivalLane
+          - arrivalPos
+          - arrivalSpeed
+          - duration
+          - routeLength
+          - waitingTime
+          - waitingCount
+          - stopTime
+          - timeLoss
+          - rerouteNo
+          - devices
+          - vtype
+      - name: emissions
+        attributes:
+          - CO_abs
+          - CO2_abs
+          - HC_abs
+          - PMx_abs
+          - NOx_abs
+          - fuel_abs
+    
+
+  FuelTotalConfig:
+    emissions_xml: ${Metadata.cwd}/emissions.out.xml
+    sim_step: ${Blocks.SimulationConfig.step_length}
+    total_energy: ???
+    total_vehicles: ???
+    delete_xml: True
+    output_time_filter_lower: ${Blocks.SimulationConfig.warmup_time}
+    polygon_file: ${Metadata.simulation_root}/additional/polygons/emission_filter.poly.add

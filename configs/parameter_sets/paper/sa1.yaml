@@ -1,0 +1,177 @@
+Blocks:
+
+  SobolSequenceConfig:
+    # this is where the generated sequence will be saved
+    params:
+      RandomSeed:
+        bounds: [0, 100_000]
+        val: ???
+      Tau:
+        bounds: [0.71, 2]
+        val: ???
+      TauDev:
+        bounds: [0.334, 0.507]
+        val: ???
+      TauDist:
+        bounds: [0, 3]
+        val: ???
+      Accel:
+        bounds: [0.8, 2.6]
+        val: ???
+      AccelDev:
+        bounds: [0.1012, 0.5]
+        val: ???
+      AccelDist:
+        bounds: [0, 3]
+        val: ???
+      Decel:
+        bounds: [0.8, 4.5]
+        val: ???
+      DecelDev:
+        bounds: [0.725, 1.849]
+        val: ???
+      DecelDist:
+        bounds: [0, 3]
+        val: ???
+      minGap:
+        bounds: [1.5, 3.5]
+        val: ???
+      minGapDev:
+        bounds: [0.96, 1.2]
+        val: ???
+      minGapDist:
+        bounds: [0, 3]
+        val: ???
+      speedFactor:
+        bounds: [0.9, 1.15]
+        val: ???
+      speedDev:
+        bounds: [0.1, 0.28]
+        val: ???
+      speedFactorDist:
+        bounds: [0, 2]
+        val: ???
+      impatience:
+        bounds: [0.05, 0.55]
+        val: ???
+      impatienceDev:
+        bounds: [0.05, 0.25]
+        val: ???
+      lcStrategic:
+        bounds: [0.8, 1.2]
+        val: ???
+      lcStrategicDev:
+        bounds: [0.1, 0.25]
+        val: ???
+      lcAssertive:
+        bounds: [0.9, 1.9]
+        val: ???
+      lcAssertiveDev:
+        bounds: [0.1, 0.25]
+        val: ???
+
+  SampledSimpleCFConfig:
+    vehicle_distribution_name: "vehDist"
+    save_path: ${Metadata.cwd}/vehDist.in.xml
+    seed: ${Blocks.SobolSequenceConfig.params.RandomSeed.val}
+    decimal_places: 5
+    num_samples: 1000
+    cf_params:
+      carFollowModel:
+        is_attr: True
+        val: "IDM"
+      emissionClass:
+        is_attr: True
+        val: PHEMlight/PC_G_EU4
+
+      tau:
+        distribution: ${call:${import:external.src.sa_helpers.distributions.get},${Blocks.SobolSequenceConfig.params.TauDist.val}}
+        params: ${call:${import:external.src.sa_helpers.distributions.transform},${.distribution},${Blocks.SobolSequenceConfig.params.Tau.val},${Blocks.SobolSequenceConfig.params.TauDev.val}}
+        bounds:
+          - 0.2
+          - 2.5
+
+      accel:
+        distribution: ${call:${import:external.src.sa_helpers.distributions.get},${Blocks.SobolSequenceConfig.params.AccelDist.val}}
+        params: ${call:${import:external.src.sa_helpers.distributions.transform},${.distribution},${Blocks.SobolSequenceConfig.params.Accel.val},${Blocks.SobolSequenceConfig.params.AccelDev.val}}
+        bounds:
+          - 0.5 # lb + largest Stddev of the distribution, except largest std dev is big in observed data, so + 2x smallest here
+          - 6
+
+      decel:
+        distribution: ${call:${import:external.src.sa_helpers.distributions.get},${Blocks.SobolSequenceConfig.params.DecelDist.val}}
+        params: ${call:${import:external.src.sa_helpers.distributions.transform},${.distribution},${Blocks.SobolSequenceConfig.params.Decel.val},${Blocks.SobolSequenceConfig.params.DecelDev.val}}
+        bounds:
+          - 0.2
+          - 6
+
+      minGap:
+        distribution: ${call:${import:external.src.sa_helpers.distributions.get},${Blocks.SobolSequenceConfig.params.minGapDist.val}}
+        params: ${call:${import:external.src.sa_helpers.distributions.transform},${.distribution},${Blocks.SobolSequenceConfig.params.minGap.val},${Blocks.SobolSequenceConfig.params.minGapDev.val}}
+        bounds:
+          - 0.1
+          - 5
+
+      speedFactor:
+        distribution: ${call:${import:external.src.sa_helpers.distributions.get},${Blocks.SobolSequenceConfig.params.speedFactorDist.val}}
+        params: ${call:${import:external.src.sa_helpers.distributions.transform},${.distribution},${Blocks.SobolSequenceConfig.params.speedFactor.val},${Blocks.SobolSequenceConfig.params.speedDev.val}}
+        bounds:
+          - 0.7
+          - 1.3
+
+      impatience:
+        distribution: "uniform"
+        params: ${call:${import:external.src.sa_helpers.distributions.transform},${.distribution},${Blocks.SobolSequenceConfig.params.impatience.val},${Blocks.SobolSequenceConfig.params.impatienceDev.val}}
+        bounds:
+          - 0
+          - 0.6
+
+      lcStrategic:
+        distribution: "uniform"
+        params: ${call:${import:external.src.sa_helpers.distributions.transform},${.distribution},${Blocks.SobolSequenceConfig.params.lcStrategic.val},${Blocks.SobolSequenceConfig.params.lcStrategicDev.val}}
+        bounds:
+          - 0.7
+          - 1.3
+
+      lcAssertive:
+        distribution: "uniform"
+        params: ${call:${import:external.src.sa_helpers.distributions.transform},${.distribution},${Blocks.SobolSequenceConfig.params.lcAssertive.val},${Blocks.SobolSequenceConfig.params.lcAssertiveDev.val}}
+        bounds:
+          - 0.8
+          - 2
+
+      length:
+        distribution: "uniform"
+        params: { "a": 4, "b": 6 }
+
+      vClass:
+        is_attr: True
+        val: "passenger"
+
+      lcCooperative:
+        distribution: "normal"
+        params: { "mu": 1, "sd": 0.2 }
+
+      actionStepLength:
+        is_attr: True
+        val: 0.2
+
+      jmTimegapMinor:
+        distribution: "uniform"
+        params: { "a": 3, "b": 6 }
+
+      lcKeepRight:
+        distribution: "uniform"
+        params:
+          a: ${..bounds[0]}
+          b: ${..bounds[1]}
+        # bounds: [4.7, 4.8]
+        bounds: [0.3, 0.7]
+
+      lcOvertakeRight:
+        distribution: "uniform"
+        # bounds: [0.3, 0.4]
+        bounds: [0.0, 0.1]
+        params:
+          a: ${..bounds[0]}
+          b: ${..bounds[1]}
