@@ -7,7 +7,7 @@ ipywidgets
 nbformat
 pyyaml
 joblib
-ray
+ray[tune]
 git+https://github.com/mschrader15/sumo-pipelines.git
 scipy
 pandas
