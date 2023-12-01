@@ -3,11 +3,16 @@ from pathlib import Path
 from omegaconf import OmegaConf
 import polars as pl
 from sumo_pipelines.utils.file_helpers import walk_directory
+from sumo_pipelines.utils.config_helpers import (
+    create_custom_resolvers,
+)
 
 
 @click.command()
 @click.argument("experiment_root", type=click.Path(exists=True))
 def main(experiment_root):
+    create_custom_resolvers()
+
     experiment_root = Path(experiment_root)
 
     results_df_path = experiment_root / "results.parquet"

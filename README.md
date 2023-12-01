@@ -1,6 +1,8 @@
 # A Global Sensitivity Analysis of Traffic Microsimulation Input Parameters on Performance Metrics
 
-## 
+## Overview
+
+
 
 ----------------
 ## Setup 
@@ -55,9 +57,7 @@ sumo-pipe ./configs/sa1.yaml ./configs/common-blocks/blocks.yaml ./configs/param
 The results of the analysis will be stored according to the `Metadata.output_dir` parameter in the `./config/sa1.yaml` file. The reults must be first processed using `scripts/process-results.py` before they can be analyzed.
 
 ```shell
-export PYTHONPATH="$PYTHONPATH:$PWD"
-
-python scripts/process_results.py <path to results directory>
+export PYTHONPATH="$PYTHONPATH:$PWD"; python scripts/process_results.py <path to results directory>
 ```
 
 You can batch execute this for many simulations with

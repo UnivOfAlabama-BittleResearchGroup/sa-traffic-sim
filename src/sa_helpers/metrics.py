@@ -16,6 +16,19 @@ SUMO_DIESEL_GRAM_TO_JOULE: float = (
 )  # MJ / kg * 1e6 J / MJ * 1 kg / 1e3 g = J / g
 
 
+def energy_2_fuel(
+    df: pl.DataFrame,
+) -> pl.DataFrame:
+    return df.with_columns(
+        total_fuel_l_cropped=pl.col("total_energy")
+        / SUMO_GASOLINE_GRAM_TO_JOULE
+        / SUMO_GASOLINE_GRAM_PER_LITER
+    ).with_columns(
+        cropped_per_vehicle_fuel=pl.col("total_fuel_l_cropped")
+        / pl.col("total_vehicles_emissions")
+    )
+
+
 @dataclass
 class SAObjectivesConfig:
     trip_info_file: Path

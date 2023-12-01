@@ -4,9 +4,20 @@ import pandas as pd
 import polars as pl
 from typing import List, Tuple, Dict
 import numpy as np
+import plotly.express as px
 
 
 from src.plotting.latex import NAME_2_LATEX
+
+RYG_COLORSCALE = [
+    "rgba(0, 147, 146, 0)",
+    "rgba(114, 170, 161, 0.2)",
+    "rgba(177, 199, 179, 0.4)",
+    "rgba(241, 234, 200, 0.6)",
+    "rgba(229, 185, 173, 0.8)",
+    "rgba(217, 137, 148, 1)",
+    "rgba(208, 88, 126, 1)",
+]
 
 
 def myround(x, base=5):
@@ -424,4 +435,69 @@ def plot_ecdfs(
 
     fig.update_annotations(font=dict(family="Open Sans", size=22))
 
+    return fig
+
+
+def plot_parallel_coordinates(
+    results_df: pl.DataFrame,
+    plot_cols: List[str],
+    metric_col: str,
+    pretty_metric: str,
+):
+    plot_df = results_df
+
+    fig = px.parallel_coordinates(
+        plot_df.select([metric_col] + list(plot_cols)).to_pandas(),
+        dimensions=list(plot_cols) + [metric_col],
+        color=metric_col,
+        color_continuous_scale=RYG_COLORSCALE,
+    )
+
+    for i, (dim, name) in enumerate(
+        zip(fig.data[0]["dimensions"], list(plot_cols) + [metric_col])
+    ):
+        try:
+            label = NAME_2_LATEX[name]
+            dim.label = ""
+        except KeyError:
+            dim.label = ""
+            label = pretty_metric
+
+        fig.add_annotation(
+            text=label,
+            xref="x domain",
+            yref="y domain",
+            x=0.25 * i,
+            y=1.08 if label == pretty_metric else 1.05,
+            # showarrow=True,
+            # If axref is exactly the same as xref, then the text's position is
+            # absolute and specified in the same coordinates as xref.
+            axref="x domain",
+            # The same is the case for yref and ayref, but here the coordinates are data
+            # coordinates
+            ayref="y domain",
+            ax=0,
+            ay=0,
+        )
+
+        base = 1 if name == metric_col else 0.01
+
+        dim.range = [
+            myround(results_df[name].min(), base),
+            myround(results_df[name].max(), base),
+        ]
+        dim.tickvals = [str(v) for v in np.linspace(dim.range[0], dim.range[1], 6)]
+
+    fig.update_coloraxes(showscale=False)
+
+    fig.update_layout(
+        template="simple_white",
+        font_family="Open Sans",
+        font_size=24,
+        height=600,
+        width=800,
+        margin=dict(l=60, r=100, b=20, t=100, pad=4),
+        # legend=dict(yanchor="bottom", y=1, xanchor="right", x=1, orientation="h")
+    )
+    fig.update_annotations(font=dict(family="Open Sans", size=24))
     return fig
