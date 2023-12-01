@@ -3,7 +3,7 @@ Metadata:
   name: SobolSensitivityAnalysisCars-${Blocks.SobolSequenceConfig.N}
   author: mcschrader@crimson.ua.edu
   output: ${oc.env:PROJECT_ROOT}/tmp/${Metadata.name}/${datetime.now:%m.%d.%Y_%H.%M.%S}
-  cwd: ${.output}/${.run_id} 
+  cwd: ${.output}/${.run_id}
   run_id: ???
   simulation_root: ${oc.env:PROJECT_ROOT}/simulation
   random_seed: 42
@@ -51,22 +51,6 @@ Pipeline:
                   - meanSpeed
                   - meanTimeLoss
 
-        # - function: external.src.calibration.metrics.usdot_calibrate
-        #   config:
-        #     sim_file: ${Metadata.cwd}/detectors.parquet
-        #     calibrate_file: ${Metadata.simulation_root}/../data/TSB_data/2023-07-01_2023-08-31/calibrate.parquet
-        #     detector_mapping: ${Metadata.simulation_root}/../data/detector_mappings/radar_detector_mapping.yaml
-        #     output_file: ${Metadata.cwd}/usdot_res.parquet
-        #     start_time: "2023-07-24 05:30:00"
-        #     warmup: ${Blocks.SimulationConfig.warmup_time}
-        #     calibrate_detectors:
-        #       - tl: "63082002"
-        #         detectors: ["EB"]
-        #       - tl: "63082003"
-        #         detectors: ["WB_advance", "EB"]
-        #       - tl: "63082004"
-        #         detectors: ["WB"]
-        
         - function: external.src.sa_helpers.metrics.get_sa_results
           config:
             trip_info_file: ${Blocks.XMLConvertConfig.target}
@@ -78,14 +62,14 @@ Pipeline:
             average_delay: ???
             average_travel_time: ???
             delay_ratio: ???
-        
+
         - function: emissions.fast_total_energy
           config: ${Blocks.FuelTotalConfig}
-        
+
         - function: ${import:io.save_config}
           config:
             save_path: ${Metadata.cwd}/config.yaml
-        
+
         - function: ${import:io.rm_file}
           config:
             rm_files:

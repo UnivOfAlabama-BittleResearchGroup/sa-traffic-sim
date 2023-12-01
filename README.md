@@ -21,9 +21,8 @@
 2. Some of the scrips in `./scripts` require the `jq` command line tool. Install it using your package manager of choice.
 
 
--------------
 
-## Sensitivity Analysis
+## Running the Sensitivity Analysis
 
 All sensitivity analyses are ran using the `sumo-pipe` command from the [sumo-pipelines](https://github.com/mschrader15/sumo-pipelines) python library.
 
@@ -32,6 +31,12 @@ They use Ray to parallelize the simulations. The number of parallel simulations 
 ```shell
 ray start --head --port=6379 --num-cpus=<desired cpu num>"
 ```
+
+All simulations rely on three environment variables:
+
+1. `SUMO_HOME`: The path to your SUMO installation
+2. `PYTHONPATH`: The path to `./src` must be added to the `PYTHONPATH` environment variable.
+3. `PROJECT_ROOT`: The path to the root of this project. This is used to find the simulation data & set the output
 
 
 ### SA 1
@@ -51,13 +56,15 @@ The analysis can be run using the following command:
 
 
 ```shell
+export PYTHONPATH="$PYTHONPATH:$PWD";
+export PROJECT_ROOT="$PWD";
 sumo-pipe ./configs/sa1.yaml ./configs/common-blocks/blocks.yaml ./configs/parameter_sets/paper/sa1.yaml
 ```
 
 The results of the analysis will be stored according to the `Metadata.output_dir` parameter in the `./config/sa1.yaml` file. The reults must be first processed using `scripts/process-results.py` before they can be analyzed.
 
 ```shell
-export PYTHONPATH="$PYTHONPATH:$PWD"; python scripts/process_results.py <path to results directory>
+python scripts/process_results.py <path to results directory>
 ```
 
 You can batch execute this for many simulations with
@@ -68,12 +75,29 @@ for dir in <path to results directory>/**/*; do
 done
 ```
 
-#### Analyzing the Results
-
-The results anaylsis is in 
-
-
 ### SA 2
 
+#### Running the Analysis
+
+Like SA 1, the sensitivity analyis is configured by three YAML files:
+
+1. `./configs/sa2.yaml`
+    - Defines the workflow and the Metadata
+2. `./configs/common-blocks/blocks.yaml`
+    - Defines the blocks used in the workflow
+3. `./configs/parameter_sets/paper/sa2.yaml`
+    - Definies the Sensitivity Analysis parameters & vehicle distributions
+
+
+The analysis can be run using the following command:
+
+```shell
+export PYTHONPATH="$PYTHONPATH:$PWD";
+export PROJECT_ROOT="$PWD";
+sumo-pipe ./configs/sa2.yaml ./configs/common-blocks/blocks.yaml ./configs/parameter_sets/paper/sa2.yaml
+```
+
+
+The results of the analysis will be stored according to the `Metadata.output_dir` parameter in the `./config/sa2.yaml` file. The reults must be first processed using `scripts/process-results.py` before they can be analyzed.
 
 
