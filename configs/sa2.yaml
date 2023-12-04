@@ -10,7 +10,7 @@ Metadata:
 
 Blocks:
   SobolSequenceConfig:
-    N: 1024
+    N: 2048
     calc_second_order: False
     save_path: ${Metadata.output}/sobol_sequence.parquet
 
