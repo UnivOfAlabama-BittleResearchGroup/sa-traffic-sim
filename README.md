@@ -117,6 +117,8 @@ for dir in <path to results directory>/**/*; do
 done
 ```
 
+The process results script may take a while to run depending on the number of simulations.
+
 ### SA 2
 
 #### Running the Analysis
