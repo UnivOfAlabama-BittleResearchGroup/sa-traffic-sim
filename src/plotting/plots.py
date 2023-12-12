@@ -199,7 +199,7 @@ def plot_si_v_n(
 
             fig.add_trace(
                 go.Scatter(
-                    x=plot_df["N"],
+                    x=plot_df["num_sims"],
                     y=plot_df[plot_col] - plot_df[f"{plot_col}_conf"],
                     name=var,
                     showlegend=False,
@@ -211,7 +211,7 @@ def plot_si_v_n(
 
             fig.add_trace(
                 go.Scatter(
-                    x=plot_df["N"],
+                    x=plot_df["num_sims"],
                     y=plot_df[plot_col] + plot_df[f"{plot_col}_conf"],
                     name=NAME_2_LATEX[var] if var in NAME_2_LATEX else var,
                     showlegend=False,
@@ -224,7 +224,7 @@ def plot_si_v_n(
 
             fig.add_trace(
                 go.Scatter(
-                    x=plot_df["N"],
+                    x=plot_df["num_sims"],
                     y=plot_df[plot_col],
                     name=NAME_2_LATEX[var] if var in NAME_2_LATEX else var,
                     showlegend=sum(idx) == 2,
@@ -236,11 +236,16 @@ def plot_si_v_n(
 
             if (
                 plot_df[plot_col].max()
-                >= results.filter(pl.col("N") == plot_df["N"].max())[plot_col].max()
+                >= results.filter(pl.col("num_sims") == plot_df["num_sims"].max())[
+                    plot_col
+                ].max()
             ):
                 fig.add_trace(
                     go.Scatter(
-                        x=[plot_df["N"].max() - 2_000, plot_df["N"].max() + 2_000],
+                        x=[
+                            plot_df["num_sims"].max() - 2_000,
+                            plot_df["num_sims"].max() + 2_000,
+                        ],
                         y=[
                             plot_df[plot_col][-1] + plot_df[plot_col][-1] * 0.1,
                         ]
@@ -263,7 +268,10 @@ def plot_si_v_n(
 
                 fig.add_trace(
                     go.Scatter(
-                        x=[plot_df["N"].max() - 2_000, plot_df["N"].max() + 2_000],
+                        x=[
+                            plot_df["num_sims"].max() - 2_000,
+                            plot_df["num_sims"].max() + 2_000,
+                        ],
                         y=[
                             plot_df[plot_col][-1] - plot_df[plot_col][-1] * 0.1,
                         ]
@@ -282,11 +290,16 @@ def plot_si_v_n(
 
             fig.update_layout(
                 **{
-                    "xaxis{}".format(sum(idx)): dict(
-                        title="Number of Simulations" if idx[0] == 2 else "",
-                        dtick=10_000,
+                    "xaxis{}".format(sum(idx) if sum(idx) > 0 else ""): dict(
+                        title="N" if idx[0] == 2 else None,
+                        # dtick=10_000 if idx[0] == 2 else None,
+                        ticktext=[*['', ] * 6, *plot_df["N"].unique().to_list()[6:]],
+                        tickvals=plot_df["num_sims"].unique().to_list(),
+                        # tickvals=plot_df["num_sims"].unique().to_list()[6:]
+                        # if idx[0] == 2
+                        # else plot_df["N"].unique().to_list()[6:],
                         # tickformat="d",
-                        tickangle=45,
+                        # tickangle=45 if idx[0] == 2 else None,
                         # showexponent="all",
                         # exponentformat="e",
                     ),
@@ -294,7 +307,6 @@ def plot_si_v_n(
                         title=r"Sensitivity Index" if idx[1] == 0 else "",
                         range=[0, 1],
                     ),
-                    # "yaxis": dict(title=r"Sensitivity Index", range=[0, 1]),
                 }
                 # tickvals=tickvals,
             )
@@ -307,6 +319,11 @@ def plot_si_v_n(
         width=800,
         margin=dict(l=50, r=50, b=20, t=20, pad=4),
         legend=dict(yanchor="top", y=-0.15, xanchor="left", x=0, orientation="h"),
+        xaxis=dict(
+            title=None,
+            ticktext=[*['', ] * 6, *plot_df["N"].unique().to_list()[6:]],
+            tickvals=plot_df["num_sims"].unique().to_list(),
+        ),
     )
 
     fig.update_annotations(font=dict(family="Open Sans", size=24))
