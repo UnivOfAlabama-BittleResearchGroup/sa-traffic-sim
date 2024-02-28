@@ -1,5 +1,7 @@
 # A Global Sensitivity Analysis of Traffic Microsimulation Input Parameters on Performance Metrics
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 ## Overview
 
 This repository contains the code used to run the sensitivity analysis in the paper "A Global Sensitivity Analysis of Traffic Microsimulation Input Parameters on Performance Metrics" by Maxwell Schrader and Joshua Bittle.
