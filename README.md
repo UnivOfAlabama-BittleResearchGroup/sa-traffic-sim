@@ -143,7 +143,19 @@ export PROJECT_ROOT="$PWD";
 sumo-pipe ./configs/sa2.yaml ./configs/common_blocks/blocks.yaml ./configs/parameter_sets/paper/sa2.yaml
 ```
 
-
 The results of the analysis will be stored according to the `Metadata.output_dir` parameter in the `./config/sa2.yaml` file. The reults must be first processed using `scripts/process-results.py` before they can be analyzed.
 
 
+## Citation
+
+```latex
+@ARTICLE{10462521,
+  author={Schrader, Maxwell and Bittle, Joshua},
+  journal={IEEE Transactions on Intelligent Transportation Systems}, 
+  title={A Global Sensitivity Analysis of Traffic Microsimulation Input Parameters on Performance Metrics}, 
+  year={2024},
+  volume={},
+  number={},
+  pages={1-14},
+  doi={10.1109/TITS.2024.3372334}}
+```
